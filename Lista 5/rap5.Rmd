@@ -1,0 +1,179 @@
+---
+title: "Raport 5"
+author: "Magdalena Potok"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+
+
+## Wstęp
+
+Poniższy raport przedstawia porównanie dokładności wyników przy konstruowaniu przedziałów ufności za pomocą metody Agrestiego-Coulla oraz metody klasycznej. Symulacje zostały przeprowadzone dla różnych rozmiarów prób oraz trzech różnych wartości prawdopodobieństwa w rozkładzie Bernoulliego. W każdym z przypadków poziom ufności wynosi 95%.\
+Metoda klasyczna zakłada że rozkład danych jest zbliżony do rozkładu normalnego. Wykorzystuje ona estymator, który jest obliczany na podstawie średniej oraz odchylenia standardowego. Przedział ufności konstruje za pomocą błedu stanardowego oraz wartości krytycznej, jej wielkość zależy od dobranego poziomu ufności (w tym rapotcie 95%). Przedział jest postaci "średnia próbki ± wartość krytyczna * SE".\
+Metoda Agrestiego-Coulla względnia lepsze dopasowanie przedziału ufności dla skrajnych wartości prawdopodobieństwa. Korzysta ona z korekty Laplace'a oraz dodatkowej stałej, aby poprawić to oszacowanie. Przedzial jest obliczany za pomocą estymacji proporcji i błedu standardowego.
+
+
+
+```{r setup, include=FALSE, results='hide'}
+set.seed(103)
+sample <- seq(10,100,10)
+
+a_c <- function(x, y) {
+  a = 0.05
+  z = 1.96
+  p = (sum(x) + 0.5 * z^2) / (length(x) + z^2)
+  SE = sqrt(p * (1 - p) / length(x))
+  pocz = p - z * SE
+  if (pocz < 0) {
+    pocz = 0
+  }
+  kon = p + z * SE
+  return(c(pocz, kon, kon - pocz, p, length(x), y))
+}
+
+
+m_k <- function(x, y) {
+  a = 0.05
+  z = 1.96
+  p = sum(x) / length(x)
+  SE = sqrt(p * (1 - p) / length(x))
+  
+  pocz = p - z * SE
+  if (pocz < 0) {
+    pocz = 0
+  }
+  kon = p + z * SE
+  return(c(pocz, kon, kon - pocz, p, length(x), y))
+}
+
+df_a_c <- data.frame()
+df_m_k <- data.frame()
+
+
+#p = 0.9
+for (s in sample) {
+    sample_data <- rbinom(s, 1, 0.9)
+ 
+    a_c_result <- round(a_c(sample_data, 0.9),2)
+    df_a_c <- round(rbind(df_a_c, a_c_result),2)
+
+    m_k_result <- round(m_k(sample_data, 0.9),2)
+    df_m_k <- round(rbind(df_m_k, m_k_result),2)
+}
+
+colnames(df_a_c) <- c("Pocz_przedział", "Kon_przedział", "Dług_przedział", "Estymator", "Wielk_próby", "Praw_wart")
+colnames(df_m_k) <- c("Pocz_przedział", "Kon_przedział", "Dług_przedział", "Estymator", "Wielk_próby", "Praw_wart")
+
+
+```
+
+## p = 0.9
+**Metoda Agrestiego-Coulla**
+
+```{r, echo = FALSE}
+df_a_c
+```
+
+**Metoda klasyczna**
+
+```{r,echo = FALSE}
+df_m_k
+```
+\
+Częstość zawierania się prawidzwej wartości w przedziale ufności za pomocą metody Agrestiego-Coulla:
+```{r, echo = FALSE}
+sum(df_a_c$Pocz_przedział <= 0.9 & df_a_c$Kon_przedział >= 0.9)/nrow(df_a_c)*100
+```
+Częstość zawierania się prawidzwej wartości w przedziale ufności za pomocą metody klasycznej:
+```{r, echo = FALSE}
+sum(df_m_k$Pocz_przedział <= 0.9 & df_m_k$Kon_przedział >= 0.9)/nrow(df_m_k)*100
+```
+Analizując powyższe wyniki można zauważyć pewnie różnice. W metodzie Agrestiego-Coulla widać, że przedziały ufności są nieco szersze, niż w metodzie klasycznej oraz częsciej zawierają one rzeczywistą wartość estymatora. To wynika z faktu, że ta metoda uwzględnia lepsze dopasowania przedziałów ufności dla skrajnych wartości.
+
+## p = 0.5
+**Metoda Agrestiego-Coulla**
+
+
+```{r, echo = FALSE}
+df_a_c1 <- data.frame()
+df_m_k1 <- data.frame()
+for (s in sample) {
+    sample_data <- rbinom(s, 1, 0.5)
+ 
+    a_c_result1 <- round(a_c(sample_data, 0.5),2)
+    df_a_c1 <- round(rbind(df_a_c1, a_c_result1),2)
+
+    m_k_result1 <- round(m_k(sample_data, 0.5),2)
+    df_m_k1 <- round(rbind(df_m_k1, m_k_result1),2)
+}
+colnames(df_a_c1) <- c("Pocz_przedział", "Kon_przedział", "Dług_przedział", "Estymator", "Wielk_próby", "Praw_wart")
+colnames(df_m_k1) <- c("Pocz_przedział", "Kon_przedział", "Dług_przedział", "Estymator", "Wielk_próby", "Praw_wart")
+df_a_c1
+
+
+```
+**Metoda klasyczna**
+
+```{r,echo = FALSE}
+df_m_k1
+```
+
+Częstość zawierania się prawidzwej wartości w przedziale ufności za pomocą metody Agrestiego-Coulla:
+```{r, echo = FALSE}
+sum(df_a_c1$Pocz_przedział <= 0.5 & df_a_c1$Kon_przedział >= 0.5)/nrow(df_a_c1)*100
+```
+Częstość zawierania się prawidzwej wartości w przedziale ufności za pomocą metody klasycznej:
+```{r, echo = FALSE}
+sum(df_m_k1$Pocz_przedział <= 0.5 & df_m_k1$Kon_przedział >= 0.5)/nrow(df_m_k1)*100
+```
+Dla p = 0.5 można zauważyć, że obie metody mają w miarę podobne wyniki. Obie metody oszacowują wartość środkową między 0 a 1. Przedziały ufności obejmują tę wartość w średnio podobnym stopniu, co oznacza, że obie metody dają podobną pewność co do prawdziwej wartości estymatora. Nadal można zauważyć pewne minimalne różnice w przedziałch ufności, jednak nie wpływa to na różnice w szerokościach przedziałów i obie metody mają podobne długości przedziałów.
+
+
+
+## p = 0.1
+**Metoda Agrestiego-Coulla**
+
+
+```{r, echo = FALSE}
+df_a_c2 <- data.frame()
+df_m_k2 <- data.frame()
+for (s in sample) {
+    sample_data <- rbinom(s, 1, 0.1)
+ 
+    a_c_result2 <- round(a_c(sample_data, 0.1),2)
+    df_a_c2 <- round(rbind(df_a_c2, a_c_result2),2)
+
+    m_k_result2 <- round(m_k(sample_data, 0.1),2)
+    df_m_k2 <- round(rbind(df_m_k2, m_k_result2),2)
+}
+colnames(df_a_c2) <- c("Pocz_przedział", "Kon_przedział", "Dług_przedział", "Estymator", "Wielk_próby", "Praw_wart")
+colnames(df_m_k2) <- c("Pocz_przedział", "Kon_przedział", "Dług_przedział", "Estymator", "Wielk_próby", "Praw_wart")
+df_a_c2
+
+
+```
+**Metoda klasyczna**
+
+```{r,echo = FALSE}
+df_m_k2
+```
+
+Częstość zawierania się prawidzwej wartości w przedziale ufności za pomocą metody Agrestiego-Coulla:
+```{r, echo = FALSE}
+sum(df_a_c2$Pocz_przedział <= 0.1 & df_a_c2$Kon_przedział >= 0.1)/nrow(df_a_c2)*100
+```
+Częstość zawierania się prawidzwej wartości w przedziale ufności za pomocą metody klasycznej:
+```{r, echo = FALSE}
+sum(df_m_k2$Pocz_przedział <= 0.1 & df_m_k2$Kon_przedział >= 0.1)/nrow(df_m_k2)*100
+```
+Metoda Agrestiego-Coulla dla p = 0.1 ponownie daje szersze przedziały ufności niż metoda klasyczna. Prawdopodobieństwo zawierania rzeczywistej wartości jest podobne, jednak, ponieważ A-C przedział jest szerszy, więc dla tej metody to prawdopodobieństwo jest większe - oznacza to, że ta metoda daje większą pewność w oszacowaniu, ale kosztem większego marginesu błędu. 
+
+
+## Podsumowanie
+
+Metoda klasyczna oraz metoda Agrestiego-Coulla są porównywalne, gdy prawdopodobieństwo w rozkładzie Bernoulliego jest bliskie 0.5. W tym przypadku skontruowane przedziały były najbardziej do siebie zbliżone i najczęściej zawierały rzeczywistą wartość estymatora. Dlatego właśnie dla tego prawdopodobieństwa obie metody mogą byś stosowane i dadzą podobne wyniki. 
+Dla prawdopodobieństw skrajnych (takich jak 0.1 lub 0.9) metoda Agrestiego-Coulla będzie tą bardziej odpowiednią. Jest tak ponieważ uwzględnia ona lepsze dopasowanie przedziału ufności poprzez zastosowanie korekty Laplace'a. Co prawda w tej metodzie przedziały były szersze, ale znacznie częściej zawierały rzeczywistą wartość. A więc dla prawdopodobieństw bliskich 0 lub 1 metoda Agrestiego-Coulla jest bardziej dokładna.
+Metoda klasyczna nie nadaje się do zastosowania gdy rozkład danych nie jest zbliżony do rozkładu normalnego. Jest tak ponieważ ta metoda opiera się właśnie na takich założeniach i w ten sposób konstruuje swój przedział ufności. Gdy to założenie nie będzie spełnione ta metoda może dawać błędne wyniki i powinno się wybrać jakąś inna metodę (np. Agrestiego-Coulla). Jednak gdy rozkład danych będzie nadzwyczajnie nietypowy, bądż próbka będzie bardzo mała (nie wystarczająca ilość obserwacji do wiarygodnego oszacowania parametru), to obie metody mogą dawać błędne wyniki i może być konieczne zastosowanie bardziej zaawansowanych technik statystycznych dla danego rozkładu.
+
+

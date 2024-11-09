@@ -1,0 +1,198 @@
+---
+title: "Zarobki mieszkańców USA w roku 2000"
+author: "Magdalena Potok"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+W raporcie zostały wykorzystane dane dotyczące zarobków mieszkańców USA w 2000 roku. Dochód całej populacji został oznaczony literą D, a pierwiastek kwadratowy D zmienną U. Zbadam normalność obu zmiennych za pomocą pięciu różnych narzędzi.
+
+```{r, echo=FALSE, results="hide"}
+F <- read.table("C:/Users/Madzia/Desktop/PSP2023/Raporty/raport1/income.dat")
+colnames(F)<-c("Nr","Wiek","Wyksztalcenie","Plec","Roczne_zarobki", "Sektor zatrudnienia")
+D <- F$Roczne_zarobki
+options(scipen=1000)
+set.seed(200)
+
+```
+
+## Odczytanie normalności z histogramu
+Aby zbadać normalność zmiennej z wykresu należy nałożyć na niego krzywą gęstości, która przedstawia rozkład prawdopodobieństwa zmiennej. Dla dostatecznie dużej wielkości próby histogram zmiennej o rozkładzie normalnym powinien przybliżać krzywą gęstości tego rozkładu. \
+Poniższy histogram przedstawia rozkład zmiennej D - czyli zarobków mieszkańców USA w 2000 roku, wielkość próby to 55 899. Na wykres została nałożona krzywa gęstości, dzięki której można zbadać normalność naszej zmiennej.\
+
+
+
+```{r, echo=FALSE}
+hist(D, breaks = 65, col = 'lightblue', main = 'Zmienna los. D',ylab = 'częstotliwość', xlab = 'zarobki mieszkancow',freq= FALSE)
+curve(dnorm(x,mean(D),sd(D)),col="red",lwd=2,add=T)
+```
+Już na pierwszy rzut oka widać, że histogram nie pokrywa się z krzywą gęstości i znacząca większość wykresu wystaje poza nią. Ta informacja oraz fakt, że histogram jest asymetryczny, skośny w prawo, wskazują nam, że rozkład zmiennej D nie jest normalny.
+
+## Wykres Q-Q
+Kolejnym sposobem zbadania normalności rozkładu jest wykres Q-Q. 
+Taki wykres przedstawia punkty, w których osie x i y reprezentują odpowiednie kwantyle  dla teoretycznego rozkładu i dla badanego rozkładu. Jeśli punkty na wykresie układają się wzdluż prostej, to można przypuszczać, że rozkład jest zgodny z rozkładem teoretycznym. Prosta która przedstawia rozkład teoretyczny, jest wyznaczana na podstawie średniej i odchylenia standardowego zmiennej.\
+
+
+
+
+```{r echo = FALSE}
+qqnorm(D, main = "Wykres QQ zmiennej D")
+qqline(D, col = "red")
+
+```
+Powyżej widać wykres Q-Q dla badanego rozkładu - D. Kolorem czerwonym została dodana prosta przedstawiająca rozkład teoretyczny. Widać, że punkty nie układają się wzdłuż tej prostej, co oznacza że rozkład zmiennej różni się od teoretycznego rozkładu prawdopodobieństwa. Z wykresu można odczytać, że to zróżnicowanie jest naprawdę duże. Co sugeruje nam, że podana zmienna nie ma rozkładu normalnego.
+
+## Reguła 68% - 95% - 99.7%
+Następnym spodobem zbadania normalności rozkładu jest reguła 68% - 95% - 99.7%. Polega ona na tym, że sprawdzamy jaki procent obserwacji znajduje się w przedziałach:\
+- jednego odchylenia standardowego poniżej średniej do jednego odchylenia standardowego powyżej średniej,\
+- dwóch odchyleń standardowych poniżej średniej do dwóch odchyleń standardowych powyżej średniej,\
+- trzech odchyleń standardowych poniżej średniej do trzech odchyleń standardowych powyżej średniej.\
+Zbadanie normalności rozkładu polega na porównaniu uzyskanych procentów z odpowiednio 68% - 95% - 99.7% - są to oczekiwane wartości dla rozkładu normalnego. Jeśli te procenty są zbliżone do wartości teoretycznych, to możemy wnioskować, że rozkład jest normalny.\
+Poniżej przedstawię uzyskane procenty dla badanej zmiennej D.\
+\
+
+$$[\mu - \sigma, \mu + \sigma]$$
+```{r, echo=FALSE}
+length(D [ D < mean(D) + sd (D) & D > mean(D) - sd(D)]) /length(D) *100
+
+```
+
+$$[\mu - 2\sigma, \mu + 2\sigma]$$
+```{r, echo = FALSE}
+length(D [ D < mean(D) +2 * sd (D) & D > mean(D) - 2*sd(D)]) /length(D) *100
+
+```
+
+$$[\mu - 3\sigma, \mu + 3  \sigma]$$
+```{r, echo = FALSE}
+
+length(D [ D < mean(D) + 3 * sd (D) & D > mean(D) - 3 * sd(D)]) /length(D) *100
+```
+
+Wyniki sugerują nam, że rozkład zmiennej D może nie być normalny, ponieważ obserwowane wartości procentowe znacznie różnią się od wartości teoretycznych dla rozkładu normalnego. Dla jednego sigma wynik jest aż o 20% wyższy, co wskazuje na to, że więcej danych znajduje się z tego przedziału, niż jest to oczekiwane dla rozkładu normalnego. Wynik 2 sigma jest zbliżony do oczekiwanego wyniku, jednak dla 3 sigma wyszło mniej niż 99.7%
+
+## Shapiro-Wilk test
+Następnym narzędziem do zbadania normalności rozkładu D będzie Sharpio-Wilk test. Mierzy on stopień odchylenia rozkładu badanej zmiennej od teoretycznego rozkładu normalnego. Im wartość statystyki testowej większa, tym bardziej dane są zgodne z rozkładem normalnym.\
+Niestety test Sharpio-Wilka ma ograniczenia i działa tylko dla prób mniejszych niż 5000, wobec tego wylosowałam 5000 obserwacji ze zmiennej D i przeprowadziłam dla nich test.
+
+```{r, echo=FALSE}
+D1 <- D[sample(1:55899, 5000)]
+shapiro.test(D1)
+
+```
+Interpetacja wyniku testu zależy od przyjętego poziomu istotniości alfa. Standardowo przyjmuje się 0,05. Zauważmy, że p-wartość jest bardzo mała, mniejsza niż ustalony poziom istotności, świadczy to o tym, że dane nie pochodzą z rozkładu normalnego.
+
+## Kolmogorov-Smirnov test
+Następnie zbadam normalność zmiennej za pomocą testu K-S.Tym razem nie ma ograniczenia wielkości próby badanej zmiennej, wobec tego test zostanie przeprowadzony dla wszystkich obserwacji.
+
+```{r, echo = FALSE}
+ks.test(unique(D), 'pnorm') 
+```
+Ponownie jak w przypadku testu S-W patrzymy na wynik p-wartości. Wartość jest znacznie mniejsza od 0,05. Świadczy to o tym, że zmienna D nie ma rozkładu normalnego.\
+\
+\
+
+
+## Badanie normalności zmiennej U
+Jako zmienną U w przypadku gdy D $\geq$ 0 przyjmuję pierwiastek kwadratowy z D. Natomiast gdy D < 0 będzie to pierwiastek kwadratowy z wartości bezwzględnej z D ze zmienionym znakiem. \
+Prościej zapisując : U =  $\sqrt{|D|} \cdot \text{sign}(D)$ \
+Zbadam teraz normalność zmiennej U używając tych smaych narzędzi, co dla zmiennej D.
+```{r, echo=FALSE, results="hide"}
+U <- sign(D)*sqrt(abs(D))
+```
+
+## Odczytanie normalności z histogramu
+```{r, echo = FALSE}
+hist(U, breaks = 65, col = 'azure3', main = 'Zmienna los. U',ylab = 'częstotliwość', xlab = 'zarobki mieszkancow',freq= FALSE)
+curve(dnorm(x,mean(U),sd(U)),col="red",lwd=2,add=T)
+```
+Zarówno histogram jak i krzywa gęstości mają symetryczny i lekko skośny w prawo kształt. Zdecydowanie większa część histogramu znajduje się pod krzywą gestości, co sugeruje nam, że badany rozkład jest bliski rozkładowi normalnemu.
+
+## Wykres Q-Q
+```{r, echo = FALSE}
+qqnorm(U, main = "Wykres QQ zmiennej U")
+qqline(U, col = "red")
+```
+Widać znaczącą różnicę między wykresem K-K dla zmiennej D, a dla zmiennej U. Tutaj znacznie większa ilość punktów układa się w prostą linię. Tak naprawdę jedynie krańce odstają od prostej lini, co może wskazywać na tkzw. 'ciężkie ogony'. Dane mają skrajne wartości, jednak w większości zachowują się tak, jak rozkład normalny. W takim przypadku ciężko potwierdzić, jak i zaprzeczyć tezie o normalności zmiennej U, warto zastosować inne narzędzia.
+
+## Reguła 68% - 95% - 99.7%
+
+$$[\mu - \sigma, \mu + \sigma]$$
+```{r, echo=FALSE}
+length(U [ U < mean(U) + sd (U) & U > mean(U) - sd(U)]) /length(U) *100
+
+```
+
+$$[\mu - 2\sigma, \mu + 2\sigma]$$
+```{r, echo = FALSE}
+length(U [ U < mean(U) +2 * sd (U) & U > mean(U) - 2*sd(U)]) /length(U) *100
+
+```
+
+$$[\mu - 3\sigma, \mu + 3 \sigma]$$
+```{r, echo = FALSE}
+
+length(U [ U < mean(U) + 3 * sd (U) & U > mean(U) - 3 * sd(U)]) /length(U) *100
+```
+Zastosowanie tej metody, podobnie tak jak dla zmiennej D, nie daje nam oczekiwanych (jak dla rozkładu normalnego) wyników. Pierwszy różni się o 7%, drugi jest prawidłowy, natomiast trzeci różni się prawie o 1,5%. Z dwóch ostatnich metod można wysnuć wnioski, mówiące nam, że dane mają skrajne wartości, które zaburzają normalność badanego rozkładu.
+
+
+## Shapiro-Wilk test
+
+```{r, echo=FALSE}
+U1 <- U[sample(1:55899, 5000)]
+shapiro.test(U1)
+
+```
+Wynik testu Sharpio-Wilk'a dla wylosowaych 5000 obserwacji ze zmiennej U jest podobny do wyniku zmiennej D. Informuje nas o tym, że rozkład zmiennej U nie jest normalny.
+
+## Kolmogorov-Smirnov test
+
+```{r, echo = FALSE}
+ks.test(unique(U), 'pnorm') 
+```
+W przypadku K-S testu jest dokładnie tak samo, p-wartość zdecydowanie jest mniejsza od 0,05, co wskazuje na brak normalności.
+
+## Prawdopodobieństwo oraz wartości oczkiwane obu zmiennych
+
+```{r, echo = FALSE, results = "hide"}
+mean(D)
+round(mean(U),2)
+round(mean(U)^2,2)
+
+
+```
+Wartość oczekiwana zmiennej D: $\mu D$ = 37864.61 \
+Wartość oczekiwana zmiennej U: $\mu U$ = 178.69 \
+Wartość oczekiwana zmiennej U do kwadratu: $(\mu U)^2$ = 31928.46 \
+\
+Podniesiona wartość oczekiwana zmiennej U do kwadratu jest bliska wartości oczekianej D. Zmienna U jest bezpośrednio wyliczana jako pierwiastek ze zmiennej D, dlatego te wartości oczekiwane są podobne. Wobec czego możemy aproksymować wartość oczekiwaną oraz odchylenie standardowe zmiennej D poprzez zmienną U. Użyję tego przybliżenia, aby policzyć prawdopodobieństwo szukane w zadaniu, przekształcając wzór w następujący sposób: \
+
+$P(|D - \mu_D| \leq k \cdot \sigma_D) = \\
+P(|D - (\mu_U)^2| \leq k \cdot (\sigma_U)^2) = \\
+P(-k \cdot (\sigma_U)^2 + (\mu_U)^2 \leq D \leq k \cdot (\sigma_U)^2 + (\mu_U)^2) = \\
+P (D \leq k \cdot (\sigma_U)^2 + (\mu_U)^2 ) - P(D \leq -k\cdot (\sigma_U)^2 + (\mu_U)^2)$ \
+
+```{r, echo=FALSE}
+f <- function(k,u,s){
+  c <- pnorm(k * s + u, u, s) - pnorm(-k * s + u, u, s)
+  return(c)
+}
+f1 <- f(1,mean(U)^2, sd(U)^2)
+f2 <- f(2,mean(U)^2, sd(U)^2)
+f3 <- f(3,mean(U)^2, sd(U)^2)
+f4 <- f(4,mean(U)^2, sd(U)^2)
+
+f1D <- f(1, mean(D), sd(D))
+f2D <- f(2, mean(D), sd(D))
+f3D <- f(3, mean(D), sd(D))
+f4D <- f(4, mean(D), sd(D))
+
+df <- data.frame ( `prawd dla zmiennej D` = paste(" ",c(f1D,f2D,f3D,f4D)), 
+                   `prawd przyblizone ` = paste(" ",c(f1,f2,f3,f4)))
+row.names(df) <- c("k = 1", "k = 2", "k = 3", "k = 4")
+df
+
+```
+Z ramki danych można wyczytać, że prawdopodobieństwo wyliczone dla zmiennej D oraz przy pomocy przybliżenia wartości średniej oraz odchylenia stanardowego tej zmiennej używając
+$(\mu_U)^2$ i $(\sigma_U)^2$ jest identyczne. Co oznacza, że znając rozkład zmiennej U, jesteśmy w stanie wyliczyć $P(|D - \mu_D| \leq k \cdot \sigma_D)$.

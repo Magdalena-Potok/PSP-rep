@@ -1,0 +1,232 @@
+---
+title: "Zarobki mieszkańców USA w roku 2000"
+author: "Magdalena Potok"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+W tym raporcie przedstawię strukturę zarobków mieszkanców USA w roku 2000, porównam zarobki kobiet i mężczyzn oraz wyznaczę *przeciętne* zarobki. Moje obliczenia zostaną oparte na podstawie przeprowadzonych w 2000 roku ankiet dot. zarobków przez Bureau of Labor Statistics na reprezentatywnej próbie 55 899 mieszkańcow USA.
+
+
+## Struktura zarobków
+
+```{r, echo=FALSE, results="hide"}
+F <- read.table("C:/Users/Madzia/Desktop/PSP2023/Raporty/raport1/income.dat")
+colnames(F)<-c("Nr","Wiek","Wyksztalcenie","Plec","Roczne_zarobki", "Sektor zatrudnienia")
+
+F1  <- F$Roczne_zarobki
+options(scipen=999)
+hist(F1, breaks = 70, col = 'antiquewhite2', main = 'Roczne zarobki mieszkańców USA w 2000 roku',xlim = c(0,400000), ylab = 'liczba osób', xlab = 'zarobki w dolarach', xaxp=c(0,400000,10))
+abline(v = mean(F1), col = "black", lwd =2, lty = 5)
+text(100000,4250, expression("średnia zarobków = "), srt=0.1, col = "black")
+text(190000,4250, round(mean(F1),2), srt=0.1, col = "black")
+text(225900,4250, "$", srt=0.1, col = "black")
+abline(v = median(F1), col = "red", lwd =2, lty = 5)
+text(106000,5050, expression("mediana zarobków = "), srt=0.1, col = "red")
+text(190000,5050, round(median(F1),2), srt=0.1, col = "red")
+text(215900,5050, "$", srt=0.1, col = "red")
+abline(h=seq(0,6000, 1000), col="gray", lty="dotted" )
+
+getmode <- function(v) { #funkcja moda
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+
+
+
+```
+```{r, echo=FALSE}
+c<- round(c(min(F1), quantile(F1, 1/4), getmode(F1), quantile(F1,1/2), max(F1), sd(F1), sd(F1)/mean(F1)),2)
+
+df <- data.frame( Min = paste(" ",c[1]), Q1 = paste(" ",c[2]), Moda = paste(" ",c[3]), Media = paste(" ",median(F1)), Q3 = paste(" ",c[4]), Max = paste(" ",c[5]), Sd = paste(" ",c[6]), Var = paste(" ",c[7]))
+row.names(df) <- c("wartość:")
+df
+
+```
+Histogram pokazuje strukturę zarobków mieszkańców USA. Jest on asymetryczny, skośny w prawo. To oznacza, że większość mieszkańców zarabia około 40000`$` rocznie, a tylko nieliczni posiadają zarobki z przedziału 100000- 400000. Maksimum zarobków wynosi 425510, a minimum -24998.\
+Osoby które posiadają ujemne wartości zarobków (170 osób - 0.3% populacji), są to głównie osoby samozatrudnione (163 osób), które wygenerowały więcej kosztów niż przychodów w 2000 roku. \
+Rozstęp między maksimum, a minimum wynosi 450508 dolarów. Ta różnica oraz współczynnik zmienności równy 95% dają nam informację, że zróżnicowanie zarobków mieszkańców USA w 2000 roku było naprawdę duże. Więcej niż średnia (czyli 37864.61$) zarobiło 20045 osób, a mniej niż średnia 35854 - czyli aż 64%. \
+Rozstęp międzykwartylowy porównuje różnicę klas i jest bardziej szczegółowy niż sam rozstęp, który bierze pod uwagę tylko skrajne wartości. Rozstęp międzykwartylowy wyniósł 29503.5, co dalej potwierdza nam fakt dużego zróżnicowania w zarobkach mieszkańców USA.
+\
+
+
+```{r, echo = FALSE, results="hide"}
+425510-24998  #roznica miedzy max a min
+F2 <- F$Wyksztalcenie
+length(which(F1 < 0))
+length(which(F1 < 0))/length(F1)
+length(which((F$`Sektor zatrudnienia` == 7) & (F$Roczne_zarobki < 0)))  #samozatrudnione z ujemnymi zarobkami
+length(which(F1 < mean(F1)))/length(F1) #ilosc osob zarabiajacych mniej niz srednia
+length(which(F1 > mean(F1))) #ilosc osob zarabiajacych wiecej niz srednia
+mean(F1)
+quantile(F1, 3/4) - quantile(F1, 1/4) 
+
+```
+Na zarobek może wpłynąć wiele czynników, między innymi wykształcenie. Przebadam teraz wpływ tego czynnika na grupę mieszkańców USA.
+
+```{r, echo = FALSE, results="hide"}
+podst <- F[F$Wyksztalcenie==1,]
+nps <- F[F$Wyksztalcenie==2,] 
+sr <- F[F$Wyksztalcenie==3,]
+npw <- F[F$Wyksztalcenie==4,]
+lic <- F[F$Wyksztalcenie==5,]
+mgr <- F[F$Wyksztalcenie==6,]
+
+
+
+par(mfrow = c(2,3))
+hist(podst$Roczne_zarobki, main = "Podstawowe",xlab = "zarobek", ylab = "Ilosc osob", ylim = c(0,15000), col="bisque1")
+hist(nps$Roczne_zarobki, main = "Niepelne srednie",xlab = "zarobek", ylab = "Ilosc osob", ylim = c(0,15000), col="burlywood") 
+hist(sr$Roczne_zarobki, main = "Srednie",xlab = "zarobek", ylab = "Ilosc osob", ylim = c(0,15000), col="burlywood1")
+hist(npw$Roczne_zarobki, main = "Niepelne wyzsze",xlab = "zarobek", ylab = "Ilosc osob", ylim = c(0,15000), col="burlywood2")
+hist(lic$Roczne_zarobki, main = "Licencjat",xlab = "zarobek", ylab = "Ilosc osob", ylim = c(0,15000), col="burlywood3")
+hist(mgr$Roczne_zarobki, main = "Magisterium",xlab = "zarobek", ylab = "Ilosc osob", ylim = c(0,15000), col="burlywood4")
+
+
+median(podst$Roczne_zarobki)
+median(nps$Roczne_zarobki)
+median(sr$Roczne_zarobki)
+median(npw$Roczne_zarobki)
+median(lic$Roczne_zarobki)
+median(mgr$Roczne_zarobki)
+
+length(which(F$Wyksztalcenie == 1))
+
+```
+
+Tak się prezentuje liczność osób z danym wykształceniem.
+
+```{r, echo=FALSE}
+df <- data.frame(Podstawowe = c(length(which(F$Wyksztalcenie == 1))), 
+           `Niepelne srednie` = c(length(which(F$Wyksztalcenie == 2))),
+           Srednie = c(length(which(F$Wyksztalcenie == 3))),
+           `Niepelne wyzsze` = c(length(which(F$Wyksztalcenie == 4))),
+           `Wyzsze lic` = c(length(which(F$Wyksztalcenie == 5))),
+           `Wyzsze mgr`= c(length(which(F$Wyksztalcenie == 6))))
+row.names(df) <- c('ilość')
+df
+
+```
+Histogramy pokazują rozkład zarobków mieszkańców USA w zależności od wykształcenia. Można zauważyć, że najliczniejszą grupą były osoby z wykształceniem średnim, a zaraz po nim grupa z wykształceniem niepełnym wyższym. Wszystkie histogramy są asymetryczne skośne w prawo, jednak można zauważyć, że im wyższy stopień naukowy - tym wykres się spłaszcza. To znaczy że zmniejszają się różnice zarobkowe między klasami, a co za tym idzie więcej osób zarabia więcej pieniędzy. 
+\
+Średnimi (licząc na podstawie wartości środkowej odpornej na obserwacje odstające) zarobkami z każdej grupy są: wykształcenie podstawowe - 15765`$`, wykształcenie niepełne średnie - 17011`$`, wykształcenie średnie - 24428`$`, wykształcenie niepełne wyższe - 29500`$`, wykształcenie wyższe (licencjat) - 40072`$`, wykształcenie wyższe (magistrum) - 55350`$`. Nie powinna nikogo zdziwić informacja, że im wyższe wykształcenie, tym średni zarobek wyższy.
+
+
+
+
+## Porównanie zarobków kobiet i mężczyzn
+
+Oprócz takich oczywistych czynników, jak wykształcenie, na zarobek może wpływać płeć. Poniżej przeanalizowałam jak wpływa ten czynnik na grupę mieszkańców USA. 
+\
+Tak prezentuje się ilość osób poszczególnych płci:
+```{r,echo=FALSE}
+data.frame(Plec = c('Kobiety', 'Mężczyźni'), `Ilość osób` = c(length(which(F$Plec == 2)), length(which(F$Plec ==1))), Procent = round(c(length(which(F$Plec == 2))/length(F$Plec)*100,length(which(F$Plec == 1))/length(F$Plec)*100),2))
+
+
+```
+Widać, że mężczyźni stanowili liczniejszą grupę od kobiet, teraz porównam statystyki obu grup.
+
+```{r pressure, echo=FALSE}
+F3 <- F[F$Plec == 1,] #mezczyzni
+F4 <- F[F$Plec == 2,] #kobiety
+
+
+par(mfrow = c(1,2))
+
+options(scipen=999)
+
+hist(F3$Roczne_zarobki, breaks = 75, col = 'cornsilk3', main = 'Roczne zarobki mężczyzn',xlim = c(0,150000), ylab = 'liczba mężczyzn', xlab = 'zarobki w dolarach')
+
+
+
+hist(F4$Roczne_zarobki, breaks = 75, col = 'cornsilk4', main = 'Roczne zarobki kobiet',xlim = c(0,150000), ylab = 'liczba kobiet', xlab = 'zarobki w dolarach')
+
+
+
+F3K <- round(summary(F3$Roczne_zarobki),2)
+F4K <- round(summary(F4$Roczne_zarobki),2)
+
+
+
+df <- data.frame(Min = paste(" ",c(F3K[1],F4K[1])), Q1 = paste(" ",c(F3K[2],F4K[2])), Mediana = paste(" ",c(F3K[3],F4K[3])), Srednia = paste("",c(F3K[4], F4K[4])),Q3 = paste("",c(F3K[5], F4K[5])), Max = paste("",c(F3K[6],F4K[6])), Sd = paste("", round(c(sd(F3$Roczne_zarobki),sd(F4$Roczne_zarobki)),2)), Var = paste("",round(c(sd(F3$Roczne_zarobki)/mean(F3$Roczne_zarobki),sd(F4$Roczne_zarobki)/mean(F4$Roczne_zarobki)),2)))
+row.names(df) = c('Mezczyzni','Kobiety')
+df
+
+```
+
+```{r, echo = FALSE, results="hide"}
+length(which(F3$Roczne_zarobki > mean(F4$Roczne_zarobki)))/length(F$Plec == 2)*100
+length(which(F4$Roczne_zarobki > mean(F3$Roczne_zarobki)))/length(F$Plec == 1)*100
+getmode(F3$Roczne_zarobki)
+getmode(F4$Roczne_zarobki)
+
+```
+
+Histogramy obu płci są asymetryczne skośne w prawo i wyglądaja podobnie, jednak jeśli spojrzymy na dokładne statystyki widać różnicę liczbową tych grup. Jak widać z ramki danych - maksimum i minimum całej grupy mależy do mężczyzn, mają oni również dużo wyższą średnią od pań wynoszącą 46489.5`$`, natomiast kobiet wynosi 28422.34`$`. Mediana również różni się, aż o 13000`$` na korzyść mężczyzn. Aż 33% panów miało wyższy zarobek od średniego zrobku grupy kobiet, gdzie jedynie 7% kobiet miało wyższy zarobek od średniego zarobku mężczyzn. Dominanta grupy mężczyzn wynosiła 30000`$`, a kobiet 20000`$`. Współczynnik zmienności na poziomie 90% pokazuje nam, że w obu grupach występuje duże zróżnicowanie zarobkowe.
+ \
+Na tak dużą przewagę mężczyzn nad kobietami może wpływać wiele czynników. Poniżej przedstawię to zróżnicowanie dla poszczególnych sektorów zatrudnienia.
+ 
+```{r, echo = FALSE}
+F35 <- F3[F3$`Sektor zatrudnienia` == 5,] #mezczyzni sektor prywatny
+F36 <- F3[F3$`Sektor zatrudnienia` == 6,] #mezczyzni sektor publiczny
+F37 <- F3[F3$`Sektor zatrudnienia` == 7,] #mezczyzni samozatrudnienie
+
+F45 <- F4[F4$`Sektor zatrudnienia` == 5,] #kobiety sektor prywatny
+F46 <- F4[F4$`Sektor zatrudnienia` == 6,] #kobiety sektor publiczny
+F47 <- F4[F4$`Sektor zatrudnienia` == 7,] #kobiety samozatrudnienie
+
+
+
+df <- data.frame(s_prywatny = c(mean(F35$Roczne_zarobki),mean(F45$Roczne_zarobki)),
+                 ilosc_pryw = c(nrow(F35),nrow(F45)),
+                 s_publiczny = c(mean(F36$Roczne_zarobki),mean(F46$Roczne_zarobki)), 
+                 ilosc_pub = c(nrow(F36),nrow(F46)),
+                 samozatrud = c(mean(F37$Roczne_zarobki),mean(F47$Roczne_zarobki)),
+                 ilosc_sam = c(nrow(F37),nrow(F47)))
+row.names(df) = c('Mężczyźni', 'Kobiety')
+df
+
+
+```
+
+```{r, echo = FALSE, results="hide"}
+mean(F45$Roczne_zarobki)/mean(F35$Roczne_zarobki)*100
+mean(F46$Roczne_zarobki)/mean(F36$Roczne_zarobki)*100
+mean(F47$Roczne_zarobki)/mean(F37$Roczne_zarobki)*100
+```
+ Powyższe statystyki przedstawiają nam średnią zarobków mężczyzn i kobiet zależnie od sektora pracy. Największa różnica zarobków znajduje się w samozatrudnieniu - średnio kobieta zarobiła jedynie 46% tego, co średnio zarobił mężczyzna.
+Następnie w sektorze prywatnym średnio kobieta zarobiła 62% tego co mężczyzna.
+Najmniejsze zróżnicowanie występuje w sektorze publicznym - tam średnio kobieta zarobiła aż 70% średniego zarobku mężczyzny.
+\
+ Mężczyźni zatem przebijają kobiety w zarobkach pod względem każdej statystyki. Przyczyny takiego zjawiska mogą być różne, mamy jednak za mało danych, aby dokładnie przeanalizować ten problem. 
+
+
+
+## Przeciętne wynagrodzenie mieszkańców USA w roku 2000
+
+Jako definicję *przeciętnego* wynagrodzenia mieszkańców USA w roku 2000 wybrałam medianę.
+Wyniosła ona 29717`$` rocznie. Mediana jest statystyką, która mówi nam, że dokładnie 50% osób zarabiało mniej niż 29717`$` rocznie oraz dokładnie drugie 50% zarabiało więcej. Można również zauważyć, że wynik ten jest całkiem zbliżony do mody tych obserwacji, która wyniosła 20000`$`, czyli najwięcej mieszkańców USA właśnie tyle zarabialo w 2000 roku. Jest ona również dużo bardziej odporna na obserwacje odstąjące od średniej, która w każdym liczonym przykładzie wychodziła wyższa.W przypadku tych danych było bardzo dużo obserwacji odstających, o czym świadczył wysoki wynik współczynnika zmienności. Średnia nie jest odporna na takie obserwacje, zatem mediana wydaje się być lepszym wyborem jako definicję przeciętnego wynagrodzenia mieszkańców USA w roku 2000. 
+\
+\
+
+## Wnioski
+
+* W 2000 roku połowa mieszkańców USA zarabiała poniżej 29 717`$` rocznie
+* Statystycznie kobiety zarabiały mniej od mężczyzn, pomimo pracowania w tym samym sektorze zatrudnienia
+* Zarobki w USA w 2000 roku posiadały bardzo dużo obserwacji odstających, co wpłynęło na nieadekwatną średnią oraz duży współczynnik zmienności
+
+
+
+
+
+
+
+
+
+

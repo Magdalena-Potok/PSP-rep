@@ -1,0 +1,330 @@
+---
+title: "Zarobki mieszkańców USA w roku 2000"
+author: "Magdalena Potok"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+W tym raporcie wykorzystam dane zebrane w 2000 roku z ankiet przeprowadzonych przez Cureau of LAbor Statistics na reprezentatywnej próbie 55 899 mieszkańców. Zebrane dane zostały potraktowane jako informacje o całej populacji. Sprawdzę doświadczelnie Prawo wielkich liczb oraz szybkość zbieżności na trzy różne sposoby.
+
+```{r, echo=FALSE, results="hide"}
+F <- read.table("C:/Users/Madzia/Desktop/PSP2023/Raporty/raport1/income.dat")
+colnames(F)<-c("Nr","Wiek","Wyksztalcenie","Plec","Roczne_zarobki", "Sektor zatrudnienia")
+
+```
+
+## Porównanie średnich zarobków
+
+Porównam teraz statystykę średnich zarobków całej populacji oraz średnich zarobków losowych prób różnych rozmiarów. Przedstawię to zróżnicowanie w postaci wykresu oraz ramki danych.
+
+
+```{r, echo=FALSE, results="hide"}
+set.seed(200)
+m_cp <- mean(F$Roczne_zarobki)
+m_10 <- mean(F$Roczne_zarobki[sample(1:55899, 10)])
+
+m_100 <- mean(F$Roczne_zarobki[sample(1:55899, 100)])
+m_1000 <- mean(F$Roczne_zarobki[sample(1:55899, 1000)])
+m_10000 <- mean(F$Roczne_zarobki[sample(1:55899, 10000)])
+m_17000 <- mean(F$Roczne_zarobki[sample(1:55899, 17000)])
+m_25000 <- mean(F$Roczne_zarobki[sample(1:55899, 25000)])
+m_35000 <- mean(F$Roczne_zarobki[sample(1:55899, 35000)])
+m_45000 <- mean(F$Roczne_zarobki[sample(1:55899, 45000)])
+m_50000 <- mean(F$Roczne_zarobki[sample(1:55899, 50000)])
+df <- c(`Całej populacji  ` = m_cp, `Próbki 100 osób  ` = m_100, `Próbki 1000 osób  ` = m_1000, `Próbki 10000 osób  ` = m_10000, `Próbki 25000 osób  ` = m_25000, `Próbki 35000 osób  ` = m_35000,`Próbki 45000 osób  ` = m_45000,`Próbki 50000 osób` = m_50000 )
+plot(c(10, 100,1000 , 10000 , 17000, 25000 , 35000   ,45000,50000 ), c(m_10,m_100,m_1000,m_10000,m_17000,m_25000,m_35000,m_45000, m_50000), xlab = "Wielkość próbki", ylab = "Średnia zarobków", xlim = c(100,50000), type = "p", pch = 16, axes = FALSE)
+axis(side = 1, at = c(10,100, 1000, 10000,17000, 25000, 35000, 45000, 50000))
+axis(side = 2 )
+box()
+abline(h = m_cp, col = "red")
+legend("topright",
+       legend = "Średnia całej populacji",
+       col ="red",
+       pch = NA,
+       lty = 1,
+       bty = "n")
+
+
+
+
+```
+
+Średnia:
+```{r, echo=FALSE}
+df
+
+```
+
+Prawo wielkich liczb to twierdzenie, które mówi nam, że w przypadku, gdy liczba powtórzeń eksperymentu jest wystarczająco duża, to częstość występowania zdarzenia będzie się mało różniła od prawdopodobieństwa tego zdarzenia. \
+W naszym przypadku prawdopodobieństwem zdarzenia będzie średnia całej populacji, a powtórzenia eksperymentu możemy rozumieć jako wybieranie coraz większego rozmiaru próbki badanych.\
+Z ramki danych oraz wykresu widać pewną prawidłowość, im wiekszą próbę wybierzemy, tym wynik jest faktycznie bliższy średniej wyliczonej z całej populacji. Losowanie wykonywane jest bez zwracania i jest to znaczący czynnik w naszych wynikach, ale widać, że już dla próbki 10000+ osób wynik jest bardzo blisko na wykresie granicy, którą jest średnia całej populacji, a więc już dla takiej wielkości próbki widać zbieżność.\
+
+## Porówananie histogramów zarobków
+
+Poniżej znajdują się histogramy zarobków dla konkretnej wielkości próby. Kształt każdego z nich zależy od wylosowanych obserwacji, najbardziej odstający od reszty bywa wykres dla próbki 10 osób. Z racji tego, że jest to skrajnie mała ilość, jego kształt bywa przeróżny zależny od wylosowanych obserwacji). Jednak można zauważyć, że przy coraz większej ilości osób, histogramy przybierają kształt asymetryczny skośny w prawo. Ta informacja mówi nam, że znaczna większość mieszkańców USA w 2000 roku zarabiała poniżej średniej. Czerwonym kolorem zaznaczyłam średnią dla każdej wielkości próby, podkreśla ona przed chwilą wspomniany fakt.\
+Zgodnie z prawem o wielkich liczbach można zauważyć, że najbardziej przypominający histogram całej populacji jest histogram dla największej próby, czyli 45 000 osób. Widać jednak, że nawet wykres dla 10000 osób przypomina kształtem wykres całej populacji.\
+
+```{r pressure, echo=FALSE}
+options(scipen=1000)
+par(mfrow = c(2,3))
+
+hist(F$Roczne_zarobki[sample(1:55899, 10)], col = 'bisque1', main = 'Roczne zarobki\
+     próbki 10 osób', ylab = 'częstotliwość', xlab = 'zarobki w dolarach',freq = FALSE, xlim = c(0,300000), ylim= c(0, 0.000020))
+abline(v = m_10, col = "red", lwd =2, lty = 7)
+hist(F$Roczne_zarobki[sample(1:55899, 100)], col = 'burlywood2', main = 'Roczne zarobki\
+     próbki 100 osób', ylab = 'częstotliwość', xlab = 'zarobki w dolarach',freq = FALSE, xlim = c(0,300000), ylim= c(0, 0.000020))
+abline(v = m_100, col = "red", lwd =2, lty = 7)
+hist(F$Roczne_zarobki[sample(1:55899, 1000)], col = 'burlywood3', main = 'Roczne zarobki\
+     mpróbki 1000 osób', ylab = 'częstotliwość', xlab = 'zarobki w dolarach',freq = FALSE, xlim = c(0,300000), ylim= c(0, 0.000020))
+abline(v = m_1000, col = "red", lwd =2, lty = 7)
+hist(F$Roczne_zarobki[sample(1:55899, 10000)], col = 'moccasin', main = 'Roczne zarobki\
+     próbki 10000 osób', ylab = 'częstotliwość', xlab = 'zarobki w dolarach',freq = FALSE, xlim = c(0,300000), ylim= c(0, 0.000020))
+abline(v = m_10000, col = "red", lwd =2, lty = 7)
+hist(F$Roczne_zarobki[sample(1:55899, 25000)], col = 'navajowhite', main = 'Roczne zarobki\
+     próbki 25000 osób', ylab = 'częstotliwość', xlab = 'zarobki w dolarach',freq = FALSE, xlim = c(0,300000), ylim= c(0, 0.000020))
+abline(v = m_25000, col = "red", lwd =2, lty = 7)
+hist(F$Roczne_zarobki[sample(1:55899, 45000)], col = 'navajowhite2', main = 'Roczne zarobki\
+     próbki 45000 osób', ylab = 'częstotliwość', xlab = 'zarobki w dolarach',freq = FALSE, xlim = c(0,300000), ylim= c(0, 0.000020))
+abline(v = m_45000, col = "red", lwd =2, lty = 7)
+
+
+
+```
+
+```{r fig1, fig.height = 3.8, echo=FALSE}
+hist(F$Roczne_zarobki, col = 'burlywood4', main = 'Roczne zarobki całej populacji', ylab = 'częstotliwość', xlab = 'zarobki w dolarach',freq = FALSE, xlim = c(0,300000), ylim= c(0, 0.000020), breaks = 40)
+abline(v = m_cp, col = "red", lwd =2, lty = 7)
+
+```
+
+##  Histogram rozkladu sredniej probkowej zarobkow przy wielokrotnym probkowaniu 
+
+```{r, echo=FALSE}
+
+x1 = c()
+for (i in 1:500) {
+  osob10 <- F$Roczne_zarobki[sample(1:55899, size = 10)]
+  mean_i <- mean(osob10)
+  x1 <- append(x1, mean_i)
+}
+x2 = c()
+for (i in 1:500) {
+  osob20 <- F$Roczne_zarobki[sample(1:55899, size = 20)]
+  mean_i <- mean(osob20)
+  x2 <- append(x2, mean_i)
+}
+x3 = c()
+for (i in 1:500) {
+  osob50 <- F$Roczne_zarobki[sample(1:55899, size = 50)]
+  mean_i <- mean(osob50)
+  x3 <- append(x3, mean_i)
+}
+x4 = c()
+for (i in 1:500) {
+  osob100 <- F$Roczne_zarobki[sample(1:55899, size = 100)]
+  mean_i <- mean(osob100)
+  x4 <- append(x4, mean_i)
+}
+x5 = c()
+for (i in 1:500) {
+  osob500 <- F$Roczne_zarobki[sample(1:55899, size = 500)]
+  mean_i <- mean(osob500)
+  x5 <- append(x5, mean_i)
+}
+x6 = c()
+for (i in 1:500) {
+  osob1000 <- F$Roczne_zarobki[sample(1:55899, size = 1000)]
+  mean_i <- mean(osob1000)
+  x6 <- append(x6, mean_i)
+}
+x7 = c()
+for (i in 1:500) {
+  osob10000 <- F$Roczne_zarobki[sample(1:55899, size = 10000)]
+  mean_i <- mean(osob10000)
+  x7 <- append(x7, mean_i)
+}
+par(mfrow=c(2,3))
+hist(x1, main = "n = 10", xlab = "Wysokosc zarobkow", ylab = "Częstosliwość", col = "chartreuse", xlim = c(0,55000), freq = FALSE)
+abline(v = m_cp, col = "red", lwd =2, lty = 7)
+hist(x2, main = "n = 20", xlab = "Wysokosc zarobkow", ylab = "Częstosliwość", col = "chartreuse1", xlim = c(0,55000), freq = FALSE) 
+abline(v = m_cp, col = "red", lwd =2, lty = 7)
+hist(x3, main = "n = 50", xlab = "Wysokosc zarobkow", ylab = "Częstosliwość", col = "chartreuse2", xlim = c(0,55000), freq = FALSE) 
+abline(v = m_cp, col = "red", lwd =2, lty = 7)
+hist(x4, main = "n = 100", xlab = "Wysokosc zarobkow", ylab = "Częstosliwość", col = "chartreuse3", xlim = c(0,55000), freq = FALSE) 
+abline(v = m_cp, col = "red", lwd =2, lty = 7)
+hist(x5, main = "n = 500", xlab = "Wysokosc zarobkow", ylab = "Częstosliwość", col = "chartreuse4", xlim = c(0,55000), freq = FALSE) 
+abline(v = m_cp, col = "red", lwd =2, lty = 7)
+hist(x6, main = "n = 1000", xlab = "Wysokosc zarobkow", ylab = "Częstosliwość", col = "darkgreen", xlim = c(0,55000), freq = FALSE) 
+abline(v = m_cp, col = "red", lwd =2, lty = 7)
+
+```
+\
+\
+Powyżej przedstawiłam histogramy rozkłady średniej próbkowej zarobków, eksperyment został w każdym przypadku powtórzony 500 razy.\
+Można zauważyć, że wszystkie histogramy, przy rożnych wielkościach próbek, przypominają rozkład normalny. Już nawet dla próbki n = 100 widać duże podobieństwo z rozkładem normalnym, w tym histogramie słupki symetrycznie odległe od środka minimalnie między sobą się różnią, a to jest właśnie charakterystyczna cecha rozkładu normalnego. We wszystkich przypadkach środek histogramu leży w miejscu średniej calej populacji Zaznaczonej czerwonym kolorem na każdym histogramie.\
+Widać, że z rosnącą wielkością próbki histogramy zbiegają do wartości środkowej. Oznacza to, że z wielkością próbki histogram rozkładu, przy wielokrotnym próbkowaniu, zbiega do wartości oczekiwanej, co jest zgodne z Prawem wielkich liczb.\
+
+
+Poniżej przedstawię odchylenie standardowe tych rozkładów dla poszczególnych n. 
+```{r, echo = FALSE}
+sd10 <- round(sd(F$Roczne_zarobki)/sqrt(10),2)
+sd20 <- round(sd(F$Roczne_zarobki)/sqrt(20),2)
+sd50 <- round(sd(F$Roczne_zarobki)/sqrt(50),2)
+sd100 <- round(sd(F$Roczne_zarobki)/sqrt(100),2)
+sd500 <- round(sd(F$Roczne_zarobki)/sqrt(500),2)
+sd1000 <- round(sd(F$Roczne_zarobki)/sqrt(1000),2)
+sd10000 <- round(sd(F$Roczne_zarobki)/sqrt(10000),2)
+df <- data.frame(paste(" ",sd10),paste(" ",sd20) ,paste(" ",sd50),paste(" ",sd100),paste(" ",sd500),paste(" ",sd1000))
+colnames(df) = c(10,20,50,100,500,1000)
+rownames(df) = c("sd")
+df
+
+```
+Jak widać im większe n, tym odchylenie standardowe maleje, co można było zauważyć już na histogramie, gdy słupki zbiegały i zaczeły skupiać się wokół średniej. Jest to kolejny przykład, w którym widać działanie Prawa wielkich liczb.
+
+
+
+Sprawdzę teraz zasadę 68-95-99.7 dla każdego z powyższych rozkładów.
+
+
+
+$$[\mu - \sigma, \mu + \sigma]$$
+
+```{r, echo=FALSE}
+
+p1od<- mean(x1) - sd10
+p1do <- mean(x1) + sd10
+l1 <- length(x1[x1 > p1od & x1 < p1do]) / 500 * 100
+
+
+p1od<- mean(x2) - sd20
+p1do <- mean(x2) + sd20
+l2 <- length(x2[x2 > p1od & x2 < p1do]) / 500 * 100
+
+
+p1od<- mean(x3) - sd50
+p1do <- mean(x3) + sd50
+l3 <- length(x3[x3 > p1od & x3 < p1do]) / 500 * 100
+
+
+
+p1od<- mean(x4) - sd100
+p1do <- mean(x4) + sd100
+l4 <- length(x4[x4 > p1od & x4 < p1do]) / 500 * 100
+
+
+
+p1od<- mean(x5) - sd500
+p1do <- mean(x5) + sd500
+l5 <- length(x5[x5 > p1od & x5 < p1do]) / 500 * 100
+
+
+p1od<- mean(x6) - sd1000
+p1do <- mean(x6) + sd1000
+l6 <- length(x6[x6 > p1od & x6 < p1do]) / 500 * 100
+
+p1od<- mean(x7) - sd10000
+p1do <- mean(x7) + sd10000
+l7 <- length(x7[x7 > p1od & x7 < p1do]) / 500 * 100
+
+df <- data.frame(paste(" ",l1),paste(" ",l2) ,paste(" ",l3),paste(" ",l4),paste(" ",l5),paste(" ",l6),paste(" ",l7))
+colnames(df) = c(10,20,50,100,500,1000,10000)
+rownames(df) = c("ni+/-sigma")
+df
+
+```
+
+$$[\mu -2\sigma, \mu + 2\sigma]$$
+
+```{r, echo=FALSE}
+p1od<- mean(x1) - 2*sd10
+p1do <- mean(x1) +2* sd10
+l1 <- length(x1[x1 > p1od & x1 < p1do]) / 500 * 100
+
+
+p1od<- mean(x2) - 2*sd20
+p1do <- mean(x2) + 2*sd20
+l2 <- length(x2[x2 > p1od & x2 < p1do]) / 500 * 100
+
+
+p1od<- mean(x3) - 2*sd50
+p1do <- mean(x3) + 2*sd50
+l3 <- length(x3[x3 > p1od & x3 < p1do]) / 500 * 100
+
+
+
+p1od<- mean(x4) - 2*sd100
+p1do <- mean(x4) + 2*sd100
+l4 <- length(x4[x4 > p1od & x4 < p1do]) / 500 * 100
+
+
+
+p1od<- mean(x5) - 2*sd500
+p1do <- mean(x5) + 2*sd500
+l5 <- length(x5[x5 > p1od & x5 < p1do]) / 500 * 100
+
+
+p1od<- mean(x6) - 2*sd1000
+p1do <- mean(x6) + 2*sd1000
+l6 <- length(x6[x6 > p1od & x6 < p1do]) / 500 * 100
+
+p1od<- mean(x7) - 2*sd10000
+p1do <- mean(x7) + 2*sd10000
+l7 <- length(x7[x7 > p1od & x7 < p1do]) / 500 * 100
+
+
+df <- data.frame(paste(" ",l1),paste(" ",l2) ,paste(" ",l3),paste(" ",l4),paste(" ",l5),paste(" ",l6),paste(" ",l7))
+colnames(df) = c(10,20,50,100,500,1000,10000)
+rownames(df) = c("ni+/-2sigma")
+df
+```
+
+$$[\mu -3\sigma, \mu + 3\sigma]$$
+
+
+```{r, echo=FALSE}
+p1od<- mean(x1) - 3*sd10
+p1do <- mean(x1) + 3*sd10
+l1 <- length(x1[x1 > p1od & x1 < p1do]) / 500 * 100
+
+
+p1od<- mean(x2) - 3*sd20
+p1do <- mean(x2) + 3*sd20
+l2 <- length(x2[x2 > p1od & x2 < p1do]) / 500 * 100
+
+
+p1od<- mean(x3) - 3*sd50
+p1do <- mean(x3) + 3*sd50
+l3 <- length(x3[x3 > p1od & x3 < p1do]) / 500 * 100
+
+
+
+p1od<- mean(x4) - 3*sd100
+p1do <- mean(x4) + 3*sd100
+l4 <- length(x4[x4 > p1od & x4 < p1do]) / 500 * 100
+
+
+
+p1od<- mean(x5) - 3*sd500
+p1do <- mean(x5) + 3*sd500
+l5 <- length(x5[x5 > p1od & x5 < p1do]) / 500 * 100
+
+
+p1od<- mean(x6) - 3*sd1000
+p1do <- mean(x6) + 3*sd1000
+l6 <- length(x6[x6 > p1od & x6 < p1do]) / 500 * 100
+
+p1od<- mean(x7) - 3*sd10000
+p1do <- mean(x7) + 3*sd10000
+l7 <- length(x7[x7 > p1od & x7 < p1do]) / 500 * 100
+
+df <- data.frame(paste(" ",l1),paste(" ",l2) ,paste(" ",l3),paste(" ",l4),paste(" ",l5),paste(" ",l6),paste(" ",l7))
+colnames(df) = c(10,20,50,100,500,1000,10000)
+rownames(df) = c("ni+/-3sigma")
+df
+```
+Na podstawie powyższych wyliczeń można zauważyć, że rozkłady mniej więcej zachowują zasadę 68-95-99.7 rozkładu normalnego. Czyli można stwierdzić, że przybliżanie tego rozkładu rozkładem normalnym jest uzasadnione, co jest zgodne z Centralnym Twierdzeniem Granicznym.\
+
+## Wnioski
+
+Doświadczalnie sprawdziłam trzy razy Prawo wielkich liczb. Za każdym razem wraz ze wzrostem wielkości próbki, byłam coraz bliżej porządanego efektu - jakim była statystyka całej populacji. W każdym przypadku ta zbieżność była naprawdę szybka, już przy próbce wielkości 1000 można było zauważać podobieństwo zachowywania się jak próbka całej populacji.

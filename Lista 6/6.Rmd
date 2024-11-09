@@ -1,0 +1,115 @@
+---
+title: "Raport 6"
+author: "Magdalena Potok"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r , include=FALSE, results='hide'}
+dane <- read.table("C:/Users/Madzia/Desktop/PSP2023/Raporty/chol.txt", header = FALSE, fill=TRUE)
+p1 <- dane[dane$V1 == 1,][2]
+nrow(p1)
+colnames(p1) <- c("chol")
+p2 <- dane[dane$V1 == 1,][3]
+colnames(p2) <- c("chol")
+p3 <- dane[dane$V1 == 1,][4]
+colnames(p3) <- c("chol")
+p4 <- dane[dane$V1 == 2,][2]
+nrow(p4)
+colnames(p4) <- c("chol")
+
+
+
+```
+
+## Wstęp
+
+Celem tego raportu jest przeanalizowanie poziomu cholesterolu pacjentów po zawale na podstawie danych z dokumentu chol.txt. Plik ten zawiera wyniki pomiarów cholesterolu pacjentów z grupy 1 wykonanych po 2, 4 i 14 dniach po zawale, oraz dla pacjentów z grupy 2 (grupa kontrolna), którzy byli mierzeni tylko raz. Analiza została dokonana przy pomocy testu T-Studenta oraz tworząc wykres pudełkowy z danych. Przyjęty poziom istotności to 0.05.
+
+## Porównanie grupy chorych 2 dni po zawale oraz grupy chorych 4 dni po zawale
+$$ H_0:  \mu_1 = \mu_2 $$
+$$ H_A:  \mu_1 > \mu_2 $$
+
+```{r, echo=FALSE}
+
+t.test(p1,p2, alternative = 'greater',var.equal = FALSE)
+
+```
+
+Wartości t oraz df oznaczają odpowiednio statystykę testową oraz stopnie swobody dla testu t. P-wartość wynosi 0.04 co oznacza, że istnieje statystycznie istotna różnica między średnimi wartościami w badanych grupach (p-wartość < 0.05). Zatem odrzucamy hipotezę zerową i przyjmujemy z 95% ufnością, że hipoteza alternatywna jest prawdziwa. \
+Badanie wykazało, że poziom cholesteroly u pacjentów zmjierzonych 2 dni po zwale jest większy, niż u pacjentów zmierzonych 4 dni po zawale.
+
+
+## Porównanie grupy chorych 4 dni po zawale oraz grupy chorych 14 dni po zawale
+$$ H_0:  \mu_1 = \mu_2 $$
+$$ H_A:  \mu_1 > \mu_2 $$
+```{r, echo=FALSE}
+
+t.test(p2,p3, alternative = 'greater',var.equal = FALSE)
+
+```
+P-wartość tego testu wynosi 0.25, co jest większe niż 0.05. Oznacza to, że nie ma wystarczających dowodów statystycznych, aby odrzucić hipotezę zerową.
+
+## Porównanie grupy chorych 2 dni po zawale oraz grupy chorych 14 dni po zawale
+$$ H_0:  \mu_1 = \mu_2 $$
+$$ H_A:  \mu_1 > \mu_2 $$
+```{r, echo=FALSE}
+
+t.test(p1,p3, alternative = 'greater',var.equal = FALSE)
+
+```
+
+P-wartość tego testu wynosi 0.001, co jest mniejsze niż 0.05 i pozwala nam to na odrzucenie hipotezy zerowej na rzecz hipotezy alternatywnej. Test wskazuje na istotnie wyższą średnią wartość cholesterolu w grupie chorych 2 dni po zwale w porównaniu do grupy osób chorych 14 dni po zwale. 
+
+## Porównanie grup chorych 2 dni po zawale oraz grupy kontrolnej
+
+$$ H_0:  \mu_1 = \mu_2 $$
+$$ H_A:  \mu_1 > \mu_2 $$
+```{r, echo=FALSE}
+
+t.test(p1,p4, alternative = 'greater',var.equal = FALSE)
+
+```
+P-wartość znacznie mniejsza od poziomu istotności = 0.05 wskazuje na to, że średnia wartość cholesterolu jest statystycznie wyższa w grupie chorych 2 dni po zawale w porównaniu do grupy kontrolnej.
+
+
+
+## Porównanie grup chorych 4 dni po zawale oraz grupy kontrolnej
+
+$$ H_0:  \mu_1 = \mu_2 $$
+$$ H_A:  \mu_1 > \mu_2 $$
+```{r, echo=FALSE}
+
+t.test(p2,p4, alternative = 'greater',var.equal = FALSE)
+
+```
+Z powodu niskiej p-wartości (= 0.0002 < 0.05) możemy odrzucić hipotezę zerową (zakładającą, że średnie wartości w obu grupach są równe) i dojść do wniosku (z 95% ufnością), że średnia wartość cholesterolu jest wyższa w grupie chorych 4 dni po zawale w porównaniu do grupy kontrolnej. 
+
+
+## Porównanie grup chorych 14 dni po zawale oraz grupy kontrolnej
+
+$$ H_0:  \mu_1 = \mu_2 $$
+$$ H_A:  \mu_1 > \mu_2 $$
+```{r, echo=FALSE}
+
+t.test(p3,p4, alternative = 'greater',var.equal = FALSE)
+
+```
+Ponownie p-wartość jest niższa niż założony poziom istotności, zatem powyższy test sugeruje, że średnia wartość cholesterolu jest wyższa w grupie 14 dni po zawale w porównaniu do grupy kontrolnej.
+
+## Wykres
+
+
+```{r echo = FALSE}
+
+
+boxplot(c(p1,p2,p3,p4),
+        main= 'Wykres pudelkowy',
+        xlab = 'Grupa',
+        ylab = 'Poziom cholesterolu',
+        col = c("hotpink3", "orchid3", "orchid", "purple"),
+        names = c('2 dni po zawale', '4 dni po zawale','14 dni po zawale','kontrolna'))
+abline(h = 200, col = 'red')
+
+```
+Powyżej został przestawiony wykres pudełkowy dla wszystkich 4 prób. Każde pudełko na wykresie reprezentuje rozkład wartości poziomu cholesterolu w danej grupie. Na wykresach można zauważyć grubszą linę w każdym pudełku - jest to mediana każdej grupy. Można zauważyć, że im więcej dni po zawale (lub wcale), tym ta mediana jest niższa - tzn. poziom cholesterolu spada. Również można zauważyć, że każde kolejne pudełko (łącznie z liniami) jest coraz mniejsze, oznacza to, że rozrzut danych się zmniejsza. Na wykresie została zaznaczona czerwoną linią norma wynosząca 200 mg/dl - jest to poziom cholesterolu u zdrowego człowieka. Jak widać, żadna z grup zawałowców nie osiągnęła takiego wyniku, więc nawet po 14 dniach nie można uważać, że osoba po zawale jest zdrowa.

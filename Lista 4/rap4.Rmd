@@ -1,0 +1,169 @@
+---
+title: "raport4"
+author: "Magdalena Potok"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r, echo=FALSE, results="hide"}
+F <- read.table("C:/Users/Madzia/Desktop/PSP2023/Raporty/grades.txt")
+colnames(F) <- c("nr","srednia_ocen","IQ","plec","PH")
+
+```
+
+
+## Wprowadzenie
+
+Raport został sporządzony na podstawie danych 78 uczniów z USA z siódmej klasy. Każdy uczeń ma przypisaną średnia ocen (skala 0-11), wynik standardowego testu IQ, płeć oraz punktację na teście psychologicznym (Piers-Harrris Children's Self-Concept Scale). Założyłam, że dante te opisują prostą próbę losową z populacji wszystkich uczniów klas siódmych. Opiszę wyniki tych badań, skonstruuję przedziały ufności dla średniej każdej ze zmiennych ilościowych całościowo oraz osobno dla każdej płci.
+
+
+## Przedział ufności oparty na rozkładzie studenta 
+
+**Analiza średniej ocen** \
+Przedział ufności oparty na rozkładzie studenta to przedział, w którym z określonym prawdopodobieństwem znajduje się nieznana wartość parametru populacji. Obliczany na podstawie średniej próby, rozmiaru próby i estymowanej wariancji próby. Im większy rozmiar próby, tym mniej ważne staje się zastosowanie rozkładu t-Studenta, a bardziej wiarygodne stają się wyniki oparte na standardowym rozkładzie normalnym.\
+Wzór 
+$$(\bar{X} - t_{n-1,\frac{\alpha}{2}}\frac{S}{\sqrt{n}},\; \bar{X} + t_{n-1,\frac{\alpha}{2}}\frac{S}{\sqrt{n}})$$
+•$\bar{X}$ to średnia arytmetyczna próby,\
+• $S$ to estymator odchylenia standardowego próby,\
+• $n$ to liczność próby,\
+• $t_{n-1,\frac{\alpha}{2}}$ to wartość t-Studenta o $(n-1)$ stopniach swobody dla poziomu ufności $\frac{\alpha}{2}$.
+
+Przedstawię teraz 95% przedział ufności, alpha = 0.05, rozkładu studenta dla średniej ocen z próby uczniów 7 klasy, n = 78, dla dziewczyn - n = 32, chlopcow n = 46.\
+Wynikiem obliczeń będzie przedział, który oznacza, że mamy 95% pewność, że średnia naszej próby będzie znajdować się w podanym przedziale. \
+
+
+```{r, echo = FALSE}
+f <- function(x, a=0.05, n=length(x)){
+  sr_p <- mean(x)
+  os_p <- sd(x)
+  t = qt(1-a/2, df=n-1)
+  a = sr_p - t * os_p / sqrt(n)
+  b = sr_p + t * os_p / sqrt(n)
+  return(c(round(a,2), round(b,2)))
+}
+
+f1 <- f(F$srednia_ocen)
+Fd <- F[F$plec=='F',]
+Fc <- F[F$plec=='M',]
+f2 <- f(Fd$srednia_ocen)
+f3 <- f(Fc$srednia_ocen)
+
+
+df <- data.frame(`srednia_ocen` = c(round(mean(F$srednia_ocen),2), round(mean(Fd$srednia_ocen),2), round(mean(Fc$srednia_ocen),2)), `wielkosc_probki` = c(nrow(F),nrow(Fd),nrow(Fc)), `lewy przedzial PU` = c(f1[1],f2[1],f3[1]), `prawy przedzial PU` = c(f1[2],f2[2],f3[2]))
+row.names(df) <- c("cala probka", "dziewczyny","chlopcy")
+df
+```
+Analizując przedziały ufności dla trzech zmiennych ilościowych, możemy zauważyć, że przedział ufności dla całej populacji jest węższy niż przedziały ufności dla populacji dziewcząt i chłopców osobno. Jest to spowodowane rozmiarem próby. Im większa próba, tym węższy jest przedział ufności. Wynika to z faktu, że większa próba obejmuje większą część badanej populacji, co oznacza, że posiadamy więcej informacji, co z kolei zmniejsza prawdopodobieństwo popełnienia błędu. \
+Możemy zauważyć że i dolna i górna granica przedziału ufności dziewcząt jest zarówno wyższa od granic przedziału chłopców, jak i całej próbki. Możemy więc powiedzieć, że dziewczyny mają wyższą średnią od chłopców.\
+\
+
+**Analiza testu IQ**
+
+```{r, echo = FALSE}
+
+f1 <- f(F$IQ)
+Fd <- F[F$plec=='F',]
+Fc <- F[F$plec=='M',]
+f2 <- f(Fd$IQ)
+f3 <- f(Fc$IQ)
+
+
+df <- data.frame(`srednia IQ` = c(round(mean(F$IQ),2), round(mean(Fd$IQ),2), round(mean(Fc$IQ),2)), `wielkosc_probki` = c(nrow(F),nrow(Fd),nrow(Fc)), `lewy przedzial PU` = c(f1[1],f2[1],f3[1]), `prawy przedzial PU` = c(f1[2],f2[2],f3[2]))
+row.names(df) <- c("cala probka", "dziewczyny","chlopcy")
+df
+
+```
+
+Na podstawie powyższych przedziałów ufności można wywnioskować, że średnia wartość IQ dla całej próby, która mieści się między 109.95 a 111.89, nie różni się znacząco od średniej wartości IQ dziewczą, która mieści się między 100.31, a 110.56. Właściwie to przedział dziewcząt nakłada się na przedział całej populacji. Natomiast średnia wartość IQ chłopców istotnie różni się od średniej wartości całej populacji, ponieważ i dolny przedział PU, wynoszący 107.8, jest wyższy oraz górny, wynoszący 114.9 jest wyższy, niż dla całej populacji. Możemy więc wywnioskować, że średnia wartość chłopców jest wyższa od dziewcząt.
+**PH**
+
+```{r, echo = FALSE}
+
+f1 <- f(F$PH)
+Fd <- F[F$plec=='F',]
+Fc <- F[F$plec=='M',]
+f2 <- f(Fd$PH)
+f3 <- f(Fc$PH)
+
+
+df <- data.frame(`srednia PH` = c(round(mean(F$PH),2), round(mean(Fd$PH),2), round(mean(Fc$PH),2)), `wielkosc_probki` = c(nrow(F),nrow(Fd),nrow(Fc)), `lewy przedzial PU` = c(f1[1],f2[1],f3[1]), `prawy przedzial PU` = c(f1[2],f2[2],f3[2]))
+row.names(df) <- c("cala probka", "dziewczyny","chlopcy")
+df
+
+```
+
+Ponownie najwęższym przedziałem jest przedział populacji, zgodnie z naszymi oczekiwaniami (największa wielkość próbki). Wszystkie granice dla każdej zmiennej są w miare zbliżone, najbardziej odstającą jest dolna granica przedziału ufności dla dziewcząt, sugeruje to nam, że wartość średnia dla tej próby jest najniższa. Tą samą logiką odstająca granicą górna jest próbka chłopców, a zatem możemy stwierdzić, że to ich średnia wartość jest największa.
+
+## Przedział ufności oparty na rozkładzie normalnym
+Przedział ufności oparty na rozkładzie normalnym to narzędzie statystyczne, które pozwala nam oszacować zakres, w którym z dużym prawdopodobieństwem znajduje się prawdziwa wartość badanej cechy w populacji, na podstawie wyników uzyskanych w próbie. 
+
+$$ (\bar{X} - z_{\alpha/2} \cdot \dfrac{s}{\sqrt{n}}, \bar{X} + z_{\alpha/2} \cdot \dfrac{s}{\sqrt{n}}) $$ 
+
+• $\bar{X}$ to wartość oczekiwana badanej cechy w populacji,\
+• $z_{\alpha/2}$ to wartość krytyczna rozkładu normalnego dla poziomu ufności $\alpha$, obliczana jako odległość od środka rozkładu do prawego lub lewego końca przedziału ufności,\
+• $s$ to odchylenie standardowe próby,\
+• $n$ to liczność próby
+
+Przedstawię teraz dla tych samych danych przedziały ufności, ale tym razem rozkłądu studenta. Ponownie istotność (alpha) na poziomie 0.05, czyli będą to 95% przedziały ufności.\
+**Analiza średniej ocen** \
+```{r, echo = FALSE}
+f <- function(x, a=0.05, n=length(x)) {
+  sr_p <- mean(x)
+  os_p <- sd(x)
+  z <- qnorm(1-a/2)
+  a <- sr_p - z * os_p / sqrt(n)
+  b <- sr_p + z * os_p / sqrt(n)
+  return(c(round(a,2), round(b,2)))
+}
+
+f1 <- f(F$srednia_ocen)
+Fd <- F[F$plec=='F',]
+Fc <- F[F$plec=='M',]
+f2 <- f(Fd$srednia_ocen)
+f3 <- f(Fc$srednia_ocen)
+
+
+df <- data.frame(`srednia_ocen` = c(round(mean(F$srednia_ocen),2), round(mean(Fd$srednia_ocen),2), round(mean(Fc$srednia_ocen),2)), `wielkosc_probki` = c(nrow(F),nrow(Fd),nrow(Fc)), `lewy przedzial PU` = c(f1[1],f2[1],f3[1]), `prawy przedzial PU` = c(f1[2],f2[2],f3[2]))
+row.names(df) <- c("cala probka", "dziewczyny","chlopcy")
+df
+```
+Porównując otrzymane wyniki przedziałów ufności rozkładu studenta, wraz z wynikami dla rozkładu normalnego dla wszystkich 3 zmiennych, możemy stwierdzić, że jest znikoma różnica. W przypadku całej próby dolna i górna granica różnią się zaledwie o 0.01, największa różnica to tak naprawdę u górnej granicy dziewcząt, bo aż o 0.03. Można zauważyć, że wszystie przedziały rozkładu normalnego są węższe od rozkładu studenta. Bardzo zbliżone przedziały ufności wskazują na to, że średnie oceny każdej z tych zmiennych z 95% pewnością mieszczą się w podanych przedziałach.\
+
+**Analiza testu IQ**
+
+```{r, echo = FALSE}
+
+f1 <- f(F$IQ)
+
+
+Fd <- F[F$plec=='F',]
+Fc <- F[F$plec=='M',]
+f2 <- f(Fd$IQ)
+f3 <- f(Fc$IQ)
+
+
+df <- data.frame(`srednia IQ` = c(round(mean(F$IQ),2), round(mean(Fd$IQ),2), round(mean(Fc$IQ),2)), `wielkosc_probki` = c(nrow(F),nrow(Fd),nrow(Fc)), `lewy przedzial PU` = c(f1[1],f2[1],f3[1]), `prawy przedzial PU` = c(f1[2],f2[2],f3[2]))
+row.names(df) <- c("cala probka", "dziewczyny","chlopcy")
+df
+```
+
+
+
+**PH**
+
+```{r, echo = FALSE}
+
+f1 <- f(F$PH)
+Fd <- F[F$plec=='F',]
+Fc <- F[F$plec=='M',]
+f2 <- f(Fd$PH)
+f3 <- f(Fc$PH)
+
+
+df <- data.frame(`srednia PH` = c(round(mean(F$PH),2), round(mean(Fd$PH),2), round(mean(Fc$PH),2)), `wielkosc_probki` = c(nrow(F),nrow(Fd),nrow(Fc)), `lewy przedzial PU` = c(f1[1],f2[1],f3[1]), `prawy przedzial PU` = c(f1[2],f2[2],f3[2]))
+row.names(df) <- c("cala probka", "dziewczyny","chlopcy")
+df
+
+```
+
+Wyniki dla testu IQ oraz PH ponownie są identyczne jak w rozkładzie studenta. Różnica między dolną a górną granicą przedziału ufności jest minimalna i wynosi zaledwie kilka setnych lub trzech setnych. Wyniki przedziałów ufności dla rozkładu normalnego są minimalnie węższe niż dla rozkładu studenta, co sugeruje, że badane zmienne nie odchycają się od normy i średnie oceny każdej z tych zmiennych mieszczą się w podanych przedziałach z pewnością wynoszącą 95%. Wnioskiem jest więc to, że badane zmienne nie mają istotnego wpływu na wyniki, a wyniki dla rozkładu normalnego i rozkładu studenta są bardzo podobne.
